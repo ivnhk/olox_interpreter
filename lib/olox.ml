@@ -15,4 +15,9 @@ let run_file path =
   let content = read_file path in
   run content
 
-let run_prompt () = print_endline "PROMPT"
+let rec run_prompt () =
+  try
+    print_string "> ";
+    run (read_line ());
+    run_prompt ()
+  with End_of_file -> ()
