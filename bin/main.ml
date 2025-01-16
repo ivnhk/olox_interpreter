@@ -5,4 +5,4 @@ let () =
     exit 64
   )
   else if len = 2 then Olox.run_file Sys.argv.(1)
-  else Olox.run_prompt ()
+  (* else Olox.run_prompt () *)
