@@ -1,0 +1,4 @@
+(executable
+ (public_name olox_interpreter)
+ (name main)
+ (libraries olox))
