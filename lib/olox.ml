@@ -14,3 +14,5 @@ let run content = print_endline content
 let run_file path =
   let content = read_file path in
   run content
+
+let run_prompt () = print_endline "PROMPT"
