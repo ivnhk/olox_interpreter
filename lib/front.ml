@@ -1,7 +1,7 @@
 let read_file file =
   In_channel.with_open_bin file In_channel.input_all
 
-let run content = print_endline content
+let run source = Lexer.scan_tokens source
 (*
   TODO:
   1. Initialize scanner
@@ -25,14 +25,14 @@ let error line where message = report line where message
 *)
 let run_file path =
   let content = read_file path in
-  run content
+  print_endline (run content)
+  (* if encountered an error during lexing -> exit 65 *)
 
-let rec run_prompt () =
-  try
+let run_prompt () =
+  while true do
     print_string "> ";
-    run (read_line ());
-    run_prompt ()
-  with End_of_file -> ()
+    run (read_line ()) |> ignore
+  done
 
 let main args =
   match Array.length args with
