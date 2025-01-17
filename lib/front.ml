@@ -33,3 +33,11 @@ let rec run_prompt () =
     run (read_line ());
     run_prompt ()
   with End_of_file -> ()
+
+let main args =
+  match Array.length args with
+  | 1 -> run_prompt ()
+  | 2 -> run_file args.(1)
+  | _ ->
+      print_endline "Usage: olox [script]";
+      exit 64
