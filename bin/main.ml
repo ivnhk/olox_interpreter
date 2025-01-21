@@ -1,1 +1,1 @@
-let () = Olox.Front.main Sys.argv
+let _ = Olox.Front.main Sys.argv
