@@ -23,12 +23,11 @@ let add_token state _ _ =
 let emit_token tokens t = add_token tokens t
 
 let advance state =
-  print_endline ("source:" ^ state.source ^ "start: " ^ string_of_int state.start ^ "current: " ^ string_of_int state.current);
-
   if not (is_at_end state)
   then begin
+    let c = String.get state.source state.current in
     state.current <- state.current + 1;
-    state.source.[state.current]
+    c
   end
   else ' '
 
@@ -37,21 +36,21 @@ let add_token tokens token =
   Dynarray.add_last tokens token
 
 (* How to make "default" case redundant? *)
-let scan_token tokens state =
+let scan_token _ state =
   let c = advance state in
-  print_char c;
   match c with
-    | '(' -> emit_token state tokens Token.Right_paren
-    (* | ')' -> add_token tokens Token.Right_paren
+    | '(' -> print_char c
+    | _ -> print_endline "lol"
+    (* | '(' -> emit_token state tokens Token.Right_paren *)
+     (* | ')' -> add_token tokens Token.Right_paren
     | '{' -> add_token tokens Token.Left_brace
     | '}' -> add_token tokens Token.Right_brace
     | ',' -> add_token tokens Token.Comma
     | '.' -> add_token tokens Token.Dot
-    | '-' -> add_token tokens Token.Minus
-    | '+' -> add_token tokens Token.Plus
-    | ';' -> add_token tokens Token.Semicolon
+    | '-' -> add_token tokens Token.Minus *)
+    (* | ';' -> add_token tokens Token.Semicolon
     | '*' -> add_token tokens Token.Star *)
-    | _ -> print_endline "lol"
+
 
 (* Should return the list of tokens *)
 (* HOW TO PARSE PROPERLY *)
