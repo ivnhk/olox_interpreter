@@ -68,5 +68,5 @@ let scan_tokens source =
     scan_token s tokens;
   done;
   (* Dynarray.add_last tokens Token.Eof; *)
-  List.iter (fun t -> Printf.printf "%s " (Token.to_string t.t)) (Dynarray.to_list tokens);
+  Dynarray.iter (fun t -> Printf.printf "%s " (Token.to_string t.t)) tokens;
   tokens
