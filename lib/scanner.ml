@@ -6,7 +6,7 @@ type state = {
   source : string;
   mutable start : int;
   mutable current : int;
-  line : int
+  mutable line : int
 }
 type token = { t: Token.t; text : string; line : int }
 
@@ -53,6 +53,9 @@ let scan_token state tokens =
     | '+' -> emit_token state tokens Token.Plus
     | ';' -> emit_token state tokens Token.Semicolon
     | '*' -> emit_token state tokens Token.Star
+    | '\n' -> begin
+      state.line <- state.line + 1
+    end
     | _ -> error state.line state.current "Unexpected characther"
 
 (* Should return the list of tokens *)

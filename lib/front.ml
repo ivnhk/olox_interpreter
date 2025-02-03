@@ -3,15 +3,6 @@ let read_file file =
 
 let run source = Scanner.scan_tokens source
 (*
-  TODO:
-  1. Initialize scanner
-  2. Scan tokens
-  3. Print each token one-by-one
-*)
-
-
-
-(*
   This function is executed when we start olox directly from command-line
   TODO:
   1. Take filename (maybe rename to path?)
