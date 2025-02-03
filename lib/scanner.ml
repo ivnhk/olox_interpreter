@@ -13,6 +13,12 @@ type token = { t: Token.t; text : string; line : int }
 let default source = { source; start = 0; current = 0; line = 1}
 let is_at_end state = state.current >= String.length state.source
 
+(* To make things better, I'll probably use Result type returned from scanner later on. This is needed to properly replace "hadError" *)
+(* TODO: implement a better error handling *)
+let report line where message = print_endline ("[line " ^ line ^ "] Error" ^ where ^ ": " ^ message)
+
+let error line where message = report (string_of_int line) (string_of_int where) message
+
 let add_token state tokens t =
   let text = String.sub state.source state.start (state.current - state.start) in
   let token = { t; text; line = state.line } in
@@ -47,7 +53,7 @@ let scan_token state tokens =
     | '+' -> emit_token state tokens Token.Plus
     | ';' -> emit_token state tokens Token.Semicolon
     | '*' -> emit_token state tokens Token.Star
-    | _ -> ()
+    | _ -> error state.line state.current "Unexpected characther"
 
 (* Should return the list of tokens *)
 (* HOW TO PARSE PROPERLY *)

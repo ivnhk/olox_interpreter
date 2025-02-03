@@ -9,11 +9,7 @@ let run source = Scanner.scan_tokens source
   3. Print each token one-by-one
 *)
 
-(* To make things better, I'll probably use Result type returned from scanner later on. This is needed to properly replace "hadError" *)
-(* TODO: implement a better error handling *)
-let report line where message = print_endline ("[line " ^ line ^ "] Error" ^ where ^ ": " ^ message)
 
-let error line where message = report line where message
 
 (*
   This function is executed when we start olox directly from command-line
