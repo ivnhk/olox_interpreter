@@ -1,7 +1,11 @@
 let read_file file =
   In_channel.with_open_bin file In_channel.input_all
 
-let run source = Scanner.scan_tokens source
+let run source =
+  let result = Scanner.scan_tokens source in
+  match result with
+  | Ok tokens -> List.iter (fun t -> Printf.printf "%s " (Token.to_string t)) tokens
+  | Error _ -> print_endline "error"
 (*
   This function is executed when we start olox directly from command-line
   TODO:
