@@ -15,16 +15,9 @@ let is_at_end state = state.current >= String.length state.source
 
 (* To make things better, I'll probably use Result type returned from scanner later on. This is needed to properly replace "hadError" *)
 (* TODO: implement a better error handling *)
-let report line where message = print_endline ("[line " ^ line ^ "] Error" ^ where ^ ": " ^ message)
+let report line where message = print_endline ("[line " ^ line ^ "] Error " ^ where ^ ": " ^ message)
 
 let error line where message = report (string_of_int line) (string_of_int where) message
-
-let add_token state tokens t =
-  let text = String.sub state.source state.start (state.current - state.start) in
-  let token = { t; text; line = state.line } in
-  Dynarray.add_last tokens token
-
-let emit_token tokens t = add_token tokens t
 
 let advance state =
   if not (is_at_end state)
@@ -35,28 +28,31 @@ let advance state =
   end
   else ' '
 
-
 let add_token tokens token =
   Dynarray.add_last tokens token
 
-(* How to make "default" case redundant? *)
-let scan_token state tokens =
+let get_text state = String.sub state.source state.start (state.current - state.start)
+let emit_token state t = { t; text = get_text state; line = state.line }
+
+(* TODO: handle EOF char *)
+let rec scan_token state =
   let c = advance state in
   match c with
-    | '(' -> emit_token state tokens Token.Left_paren
-    | ')' -> emit_token state tokens Token.Right_paren
-    | '{' -> emit_token state tokens Token.Left_brace
-    | '}' -> emit_token state tokens Token.Right_brace
-    | ',' -> emit_token state tokens Token.Comma
-    | '.' -> emit_token state tokens Token.Dot
-    | '-' -> emit_token state tokens Token.Minus
-    | '+' -> emit_token state tokens Token.Plus
-    | ';' -> emit_token state tokens Token.Semicolon
-    | '*' -> emit_token state tokens Token.Star
+    | '(' -> Ok (emit_token state Token.Left_paren)
+    | ')' -> Ok (emit_token state Token.Right_paren)
+    | '{' -> Ok (emit_token state Token.Left_brace)
+    | '}' -> Ok (emit_token state Token.Right_brace)
+    | ',' -> Ok (emit_token state Token.Comma)
+    | '.' -> Ok (emit_token state Token.Dot)
+    | '-' -> Ok (emit_token state Token.Minus)
+    | '+' -> Ok (emit_token state Token.Plus)
+    | ';' -> Ok (emit_token state Token.Semicolon)
+    | '*' -> Ok (emit_token state Token.Star)
     | '\n' -> begin
-      state.line <- state.line + 1
+      state.line <- state.line + 1;
+      scan_token state
     end
-    | _ -> error state.line state.current "Unexpected characther"
+    | _ -> Error (error state.line state.current "Unexpected characther")
 
 (* Should return the list of tokens *)
 (* HOW TO PARSE PROPERLY *)
@@ -65,8 +61,12 @@ let scan_tokens source =
   let tokens = Dynarray.create () in
   while not (is_at_end s) do
     s.start <- s.current;
-    scan_token s tokens;
+    let result = scan_token s in
+    match result with
+    | Ok token -> add_token tokens token
+    | _ -> ()
+    (* TODO: handle tokens and errors level above *)
   done;
-  (* Dynarray.add_last tokens Token.Eof; *)
+
   Dynarray.iter (fun t -> Printf.printf "%s " (Token.to_string t.t)) tokens;
   tokens
