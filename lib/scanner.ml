@@ -32,7 +32,14 @@ let add_token tokens token =
   Dynarray.add_last tokens token
 
 let get_text state = String.sub state.source state.start (state.current - state.start)
+(* TODO: do I really need to emit a more complex token? *)
 let emit_token state t = { t; text = get_text state; line = state.line }
+
+let emit_two_char_token c t1 t2 =
+  match c with
+  | '=' -> t1
+  | _ -> t2
+
 
 (* TODO: handle EOF char *)
 let rec scan_token state =
@@ -48,6 +55,27 @@ let rec scan_token state =
     | '+' -> Ok (emit_token state Token.Plus)
     | ';' -> Ok (emit_token state Token.Semicolon)
     | '*' -> Ok (emit_token state Token.Star)
+    | '!' -> begin
+        let nextCh = advance state in
+        let t = emit_two_char_token nextCh Token.Bang_equal Token.Bang in
+        Ok (emit_token state t)
+      end
+    | '=' -> begin
+        let nextCh = advance state in
+        let t = emit_two_char_token nextCh Token.Equal_equal Token.Equal in
+        Ok (emit_token state t)
+      end
+    | '<' -> begin
+        let nextCh = advance state in
+        let t = emit_two_char_token nextCh Token.Less_equal Token.Less in
+        Ok (emit_token state t)
+      end
+    | '>' -> begin
+        let nextCh = advance state in
+        let t = emit_two_char_token nextCh Token.Greater_equal Token.Greater in
+        Ok (emit_token state t)
+      end
+    (* TODO: add handling for division and comments (//) *)
     | '\n' -> begin
       state.line <- state.line + 1;
       scan_token state
@@ -55,7 +83,7 @@ let rec scan_token state =
     | _ -> Error (error state.line state.current "Unexpected characther")
 
 (* Should return the list of tokens *)
-(* HOW TO PARSE PROPERLY *)
+(* TODO: return errors as well to notify user if error has occurred *)
 let scan_tokens source =
   let s = default source in
   let tokens = Dynarray.create () in
