@@ -35,6 +35,7 @@ let get_text state = String.sub state.source state.start (state.current - state.
 (* TODO: do I really need to emit a more complex token? *)
 let emit_token state t = { t; text = get_text state; line = state.line }
 
+(* TODO: should I use either? *)
 let emit_two_char_token c t1 t2 =
   match c with
   | '=' -> t1
@@ -76,6 +77,7 @@ let rec scan_token state =
         Ok (emit_token state t)
       end
     (* TODO: add handling for division and comments (//) *)
+    | ' ' | '\r' | '\t' -> scan_token state
     | '\n' -> begin
       state.line <- state.line + 1;
       scan_token state
