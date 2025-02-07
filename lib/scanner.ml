@@ -42,6 +42,7 @@ let emit_two_char_token c t1 t2 =
   | _ -> t2
 
 
+(* TODO: does not handle switching to the following line properly *)
 (* TODO: handle EOF char *)
 let rec scan_token state =
   let c = advance state in
@@ -89,14 +90,18 @@ let rec scan_token state =
 let scan_tokens source =
   let s = default source in
   let tokens = Dynarray.create () in
+  let errors = Dynarray.create () in
   while not (is_at_end s) do
     s.start <- s.current;
     let result = scan_token s in
     match result with
     | Ok token -> add_token tokens token
-    | _ -> ()
+    | Error e -> Dynarray.add_last errors e
     (* TODO: handle tokens and errors level above *)
   done;
 
   Dynarray.iter (fun t -> Printf.printf "%s " (Token.to_string t.t)) tokens;
-  tokens
+
+  if Dynarray.length errors > 0
+  then Error errors
+  else Ok tokens
