@@ -15,13 +15,9 @@ let report line where message = print_endline ("[line " ^ line ^ "] Error " ^ wh
 let error line where message = report (string_of_int line) (string_of_int where) message
 
 let advance state =
-  if not (is_at_end state)
-  then begin
     let c = String.get state.source state.current in
     state.current <- state.current + 1;
     c
-  end
-  else ' '
 
 let add_token tokens token =
   Dynarray.add_last tokens token
@@ -81,17 +77,18 @@ let rec scan_token state =
     | _ -> Error (error state.line state.current "Unexpected characther")
 
 let scan_tokens source =
-  let s = default source in
+  let state = default source in
   let tokens = Dynarray.create () in
   let errors = Dynarray.create () in
-  while not (is_at_end s) do
-    s.start <- s.current;
-    let result = scan_token s in
+  while not (is_at_end state) do
+    state.start <- state.current;
+    let result = scan_token state in
     match result with
     | Ok token -> add_token tokens token
     | Error e -> Dynarray.add_last errors e
     (* TODO: handle tokens and errors level above *)
   done;
+  add_token tokens (emit_token state Token.Eof);
 
   Dynarray.iter (fun t -> Printf.printf "%s " (Token.to_string t.t)) tokens;
 
