@@ -1,7 +1,3 @@
-(* WHERE AND HOW to store tokens *)
-(* Parse tokens - how? *)
-
-(* HOW to determine if I reached the end of the source file *)
 type state = {
   source : string;
   mutable start : int;
@@ -13,7 +9,6 @@ type token = { t: Token.t; text : string; line : int }
 let default source = { source; start = 0; current = 0; line = 1}
 let is_at_end state = state.current >= String.length state.source
 
-(* To make things better, I'll probably use Result type returned from scanner later on. This is needed to properly replace "hadError" *)
 (* TODO: implement a better error handling *)
 let report line where message = print_endline ("[line " ^ line ^ "] Error " ^ where ^ ": " ^ message)
 
@@ -85,8 +80,6 @@ let rec scan_token state =
     end
     | _ -> Error (error state.line state.current "Unexpected characther")
 
-(* Should return the list of tokens *)
-(* TODO: return errors as well to notify user if error has occurred *)
 let scan_tokens source =
   let s = default source in
   let tokens = Dynarray.create () in
