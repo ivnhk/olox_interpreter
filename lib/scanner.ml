@@ -26,7 +26,7 @@ let get_text state = String.sub state.source state.start (state.current - state.
 (* TODO: do I really need to emit a more complex token? *)
 let emit_token state t = { t; text = get_text state; line = state.line }
 
-(* TODO: should I use either? *)
+(* TODO: rework using `match` from the book *)
 let emit_two_char_token c t1 t2 =
   match c with
   | '=' -> t1
