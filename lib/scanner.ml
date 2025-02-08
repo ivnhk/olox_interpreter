@@ -11,7 +11,6 @@ let is_at_end state = state.current >= String.length state.source
 
 (* TODO: implement a better error handling *)
 let report line where message = print_endline ("[line " ^ line ^ "] Error " ^ where ^ ": " ^ message)
-
 let error line where message = report (string_of_int line) (string_of_int where) message
 
 let advance state =
@@ -24,51 +23,38 @@ let add_token tokens token =
 
 let get_text state = String.sub state.source state.start (state.current - state.start)
 (* TODO: do I really need to emit a more complex token? *)
-let emit_token state t = { t; text = get_text state; line = state.line }
+let emit_token state t = Ok ({ t; text = get_text state; line = state.line })
 
-(* TODO: rework using `match` from the book *)
-let emit_two_char_token c t1 t2 =
-  match c with
-  | '=' -> t1
-  | _ -> t2
-
+let match_char_eq state =
+  if is_at_end state then
+    false
+  else
+    let c = state.source.[state.current] in
+    if c <> '=' then
+      false
+    else begin
+      state.current <- state.current + 1;
+      true
+    end
 
 (* TODO: does not handle switching to the following line properly *)
-(* TODO: handle EOF char *)
 let rec scan_token state =
   let c = advance state in
   match c with
-    | '(' -> Ok (emit_token state Token.Left_paren)
-    | ')' -> Ok (emit_token state Token.Right_paren)
-    | '{' -> Ok (emit_token state Token.Left_brace)
-    | '}' -> Ok (emit_token state Token.Right_brace)
-    | ',' -> Ok (emit_token state Token.Comma)
-    | '.' -> Ok (emit_token state Token.Dot)
-    | '-' -> Ok (emit_token state Token.Minus)
-    | '+' -> Ok (emit_token state Token.Plus)
-    | ';' -> Ok (emit_token state Token.Semicolon)
-    | '*' -> Ok (emit_token state Token.Star)
-    | '!' -> begin
-        let nextCh = advance state in
-        let t = emit_two_char_token nextCh Token.Bang_equal Token.Bang in
-        Ok (emit_token state t)
-      end
-    | '=' -> begin
-        let nextCh = advance state in
-        let t = emit_two_char_token nextCh Token.Equal_equal Token.Equal in
-        Ok (emit_token state t)
-      end
-    | '<' -> begin
-        let nextCh = advance state in
-        let t = emit_two_char_token nextCh Token.Less_equal Token.Less in
-        Ok (emit_token state t)
-      end
-    | '>' -> begin
-        let nextCh = advance state in
-        let t = emit_two_char_token nextCh Token.Greater_equal Token.Greater in
-        Ok (emit_token state t)
-      end
-    (* TODO: add handling for division and comments (//) *)
+    | '(' -> emit_token state Token.Left_paren
+    | ')' -> emit_token state Token.Right_paren
+    | '{' -> emit_token state Token.Left_brace
+    | '}' -> emit_token state Token.Right_brace
+    | ',' -> emit_token state Token.Comma
+    | '.' -> emit_token state Token.Dot
+    | '-' -> emit_token state Token.Minus
+    | '+' -> emit_token state Token.Plus
+    | ';' -> emit_token state Token.Semicolon
+    | '*' -> emit_token state Token.Star
+    | '!' -> if match_char_eq state then emit_token state Token.Bang_equal else emit_token state Token.Bang
+    | '=' -> if match_char_eq state then emit_token state Token.Equal_equal else emit_token state Token.Equal
+    | '<' -> if match_char_eq state then emit_token state Token.Less_equal else emit_token state Token.Less
+    | '>' -> if match_char_eq state then emit_token state Token.Greater_equal else emit_token state Token.Greater
     | ' ' | '\r' | '\t' -> scan_token state
     | '\n' -> begin
       state.line <- state.line + 1;
@@ -88,7 +74,7 @@ let scan_tokens source =
     | Error e -> Dynarray.add_last errors e
     (* TODO: handle tokens and errors level above *)
   done;
-  add_token tokens (emit_token state Token.Eof);
+  (* add_token tokens (emit_token state Token.Eof); *)
 
   Dynarray.iter (fun t -> Printf.printf "%s " (Token.to_string t.t)) tokens;
 
