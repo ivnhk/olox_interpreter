@@ -72,9 +72,8 @@ let scan_tokens source =
     match result with
     | Ok token -> add_token tokens token
     | Error e -> Dynarray.add_last errors e
-    (* TODO: handle tokens and errors level above *)
   done;
-  (* add_token tokens (emit_token state Token.Eof); *)
+  add_token tokens (emit_token state Token.Eof |> Result.get_ok);
 
   Dynarray.iter (fun t -> Printf.printf "%s " (Token.to_string t.t)) tokens;
 
