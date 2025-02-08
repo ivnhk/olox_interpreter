@@ -25,19 +25,24 @@ let get_text state = String.sub state.source state.start (state.current - state.
 (* TODO: do I really need to emit a more complex token? *)
 let emit_token state t = Ok ({ t; text = get_text state; line = state.line })
 
-let match_char_eq state =
+let match_char state expected =
   if is_at_end state then
     false
   else
     let c = state.source.[state.current] in
-    if c <> '=' then
+    if c <> expected then
       false
     else begin
       state.current <- state.current + 1;
       true
     end
 
-(* TODO: does not handle switching to the following line properly *)
+let peek state =
+  if is_at_end state then
+    '\255'
+  else
+    state.source.[state.current]
+
 let rec scan_token state =
   let c = advance state in
   match c with
@@ -51,10 +56,19 @@ let rec scan_token state =
     | '+' -> emit_token state Token.Plus
     | ';' -> emit_token state Token.Semicolon
     | '*' -> emit_token state Token.Star
-    | '!' -> if match_char_eq state then emit_token state Token.Bang_equal else emit_token state Token.Bang
-    | '=' -> if match_char_eq state then emit_token state Token.Equal_equal else emit_token state Token.Equal
-    | '<' -> if match_char_eq state then emit_token state Token.Less_equal else emit_token state Token.Less
-    | '>' -> if match_char_eq state then emit_token state Token.Greater_equal else emit_token state Token.Greater
+    | '!' -> if match_char state '=' then emit_token state Token.Bang_equal else emit_token state Token.Bang
+    | '=' -> if match_char state '=' then emit_token state Token.Equal_equal else emit_token state Token.Equal
+    | '<' -> if match_char state '=' then emit_token state Token.Less_equal else emit_token state Token.Less
+    | '>' -> if match_char state '=' then emit_token state Token.Greater_equal else emit_token state Token.Greater
+    (* TODO: fix comment parsing. ATM, the in-line comment is parsed incorrectly *)
+    | '/' ->
+      if match_char state '/' then begin
+        while peek state <> '\n' && not (is_at_end state) do
+          ignore (advance state)
+        done;
+        scan_token state
+      end else
+        emit_token state Token.Slash
     | ' ' | '\r' | '\t' -> scan_token state
     | '\n' -> begin
       state.line <- state.line + 1;
