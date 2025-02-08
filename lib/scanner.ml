@@ -43,6 +43,25 @@ let peek state =
   else
     state.source.[state.current]
 
+(* FIXME: Fails on string parsing *)
+let trim_quotes state = String.sub state.source (state.start + 1) (state.current - 1)
+
+let parse_string state =
+  while peek state <> '"' && not (is_at_end state) do
+    if peek state = '\n' then
+      state.line <- state.line + 1;
+    ignore (advance state);
+  done;
+
+  if is_at_end state then
+    error state.line state.current "Unterminated string.";
+    ();
+
+  (* The closing '"'. *)
+  ignore (advance state);
+  trim_quotes state
+
+
 let rec scan_token state =
   let c = advance state in
   match c with
@@ -71,9 +90,10 @@ let rec scan_token state =
         emit_token state Token.Slash
     | ' ' | '\r' | '\t' -> scan_token state
     | '\n' -> begin
-      state.line <- state.line + 1;
-      scan_token state
-    end
+        state.line <- state.line + 1;
+        scan_token state
+      end
+    | '"' -> emit_token state (Token.String (parse_string state))
     | _ -> Error (error state.line state.current "Unexpected characther")
 
 let scan_tokens source =
