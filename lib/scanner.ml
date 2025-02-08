@@ -43,8 +43,9 @@ let peek state =
   else
     state.source.[state.current]
 
-(* FIXME: Fails on string parsing *)
-let trim_quotes state = String.sub state.source (state.start + 1) (state.current - 1)
+(* FIXME: Fix pos and length by moving through source code file correctly *)
+let trim_quotes state =
+  String.sub state.source (state.start + 2) (state.current - state.start - 3)
 
 let parse_string state =
   while peek state <> '"' && not (is_at_end state) do
