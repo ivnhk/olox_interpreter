@@ -85,6 +85,18 @@ let parse_number state =
   end;
   float_of_string (String.sub state.source state.start (state.current - state.start))
 
+let is_alpha = function
+  | 'a' .. 'z' | 'A' .. 'Z' | '_' -> true
+  | _ -> false
+
+let is_alphanum c = is_alpha c || is_digit c
+
+let parse_identifier state =
+  while is_alphanum (peek state) do
+    ignore (advance state)
+  done;
+  String.sub state.source state.start (state.current - state.start)
+
 let rec scan_token state =
   let c = advance state in
   match c with
@@ -118,6 +130,9 @@ let rec scan_token state =
       end
     | '"' -> emit_token state (Token.String (parse_string state))
     | '0' .. '9' -> emit_token state (Token.Number (parse_number state))
+    | alpha when is_alpha alpha -> begin
+        emit_token state (Token.Identifier (parse_identifier state))
+      end
     | _ -> Error (error state.line state.current "Unexpected characther")
 
 let scan_tokens source =
