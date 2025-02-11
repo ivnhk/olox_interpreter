@@ -43,6 +43,8 @@ let peek state =
   else
     state.source.[state.current]
 
+let peek_next state = if state.current + 1 >= String.length state.source then '\255' else state.source.[state.current + 1]
+
 (* FIXME: Fix pos and length by moving through source code file correctly *)
 let trim_quotes state =
   String.sub state.source (state.start + 2) (state.current - state.start - 3)
@@ -62,6 +64,26 @@ let parse_string state =
   ignore (advance state);
   trim_quotes state
 
+(* TODO: add implementation *)
+let is_digit = function
+    | '0' .. '9' -> true
+    | _ -> false
+
+let parse_number state =
+  while is_digit (peek state) do
+    ignore (advance state)
+  done;
+
+  (* Check for a fractional part *)
+  if peek state = '.' then begin
+    if is_digit (peek_next state) then begin
+      ignore (advance state); (* Consume the '.' *)
+      while is_digit (peek state) do
+        ignore (advance state)
+      done
+    end
+  end;
+  float_of_string (String.sub state.source state.start (state.current - state.start))
 
 let rec scan_token state =
   let c = advance state in
@@ -95,6 +117,7 @@ let rec scan_token state =
         scan_token state
       end
     | '"' -> emit_token state (Token.String (parse_string state))
+    | '0' .. '9' -> emit_token state (Token.Number (parse_number state))
     | _ -> Error (error state.line state.current "Unexpected characther")
 
 let scan_tokens source =
