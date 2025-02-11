@@ -84,3 +84,22 @@ let to_string = function
 | Var -> "var"
 | While -> "while"
 | Eof -> "eof"
+
+let t_of_identifier = function
+  | "and" -> And
+  | "class" -> Class
+  | "else" -> Else
+  | "false" -> False
+  | "fun" -> Fun
+  | "for" -> For
+  | "if" -> If
+  | "nil" -> Nil
+  | "or" -> Or
+  | "print" -> Print
+  | "return" -> Return
+  | "super" -> Super
+  | "this" -> This
+  | "true" -> True
+  | "var" -> Var
+  | "while" -> While
+  | _ as i -> Identifier i

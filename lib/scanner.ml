@@ -95,7 +95,8 @@ let parse_identifier state =
   while is_alphanum (peek state) do
     ignore (advance state)
   done;
-  String.sub state.source state.start (state.current - state.start)
+  let text = String.trim (get_text state) in
+  Token.t_of_identifier (String.trim text)
 
 let rec scan_token state =
   let c = advance state in
@@ -130,8 +131,9 @@ let rec scan_token state =
       end
     | '"' -> emit_token state (Token.String (parse_string state))
     | '0' .. '9' -> emit_token state (Token.Number (parse_number state))
-    | alpha when is_alpha alpha -> begin
-        emit_token state (Token.Identifier (parse_identifier state))
+    | 'a' .. 'z' | 'A' .. 'Z' | '_' -> begin
+        let token_type = parse_identifier state in
+        emit_token state token_type
       end
     | _ -> Error (error state.line state.current "Unexpected characther")
 
